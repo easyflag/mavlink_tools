@@ -16,6 +16,16 @@ class LinkInterface(QObject):
         raise RuntimeError('no write() method supplied')
 
 
+class FakeLink(LinkInterface):
+    def __init__(self):
+        super().__init__()
+
+    def close(self):
+        pass
+
+    def write(self, buf):
+        pass
+
 class SerialLink(LinkInterface):
     def __init__(self, port_name: str):
         super().__init__()
@@ -26,7 +36,7 @@ class SerialLink(LinkInterface):
 
         self.__serial_port.readyRead.connect(self.onReadyRead)
         res = self.__serial_port.open(QIODevice.OpenModeFlag.ReadWrite)
-        print("ser open", res)
+        print("%s open" % port_name, res)
 
     def __del__(self):
         self.close()
@@ -74,7 +84,7 @@ class UdpLink(LinkInterface):
         self.__udpSocket = QUdpSocket()
         res = self.__udpSocket.bind(QHostAddress(addr), port,
                                     QAbstractSocket.BindFlag.ShareAddress)
-        print("udp bind", res)
+        print("udp %s bind" % port, res)
 
         self.__udpSocket.readyRead.connect(self.onReadyRead)
 
@@ -104,5 +114,5 @@ class UdpLink(LinkInterface):
         addr = QHostAddress(host)
         c = UdpClient(addr, port)
         if not self.contains_target(c):
-            print("new target", host, port)
+            print("new udp target", host, port)
             self.__sessionTarget.append(c)
